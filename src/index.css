@@ -1,0 +1,6 @@
+body { margin:0; font-family: Arial, sans-serif; }
+a { color: #0066cc; text-decoration:none; }
+table { border-collapse: collapse; width:100%; }
+th, td { border: 1px solid #ddd; padding:8px; }
+th { background:#f9fafb; text-align:left; }
+.btn { background:#0066cc; color:#fff; padding:8px 12px; border-radius:4px; }
