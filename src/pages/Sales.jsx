@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-import salesService from "../Services/salesService";   // <-- ensure folder name case is correct
-import { saveAs } from "file-saver";
-import * as XLSX from "xlsx";         // <-- correct import
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";             // <-- required plugin
+import "jspdf-autotable";      // just import it so it registers .autoTable on jsPDF
+import * as XLSX from "xlsx";  // namespace import (works with Vite)
+import { saveAs } from "file-saver";
 
 
 export default function Sales() {
