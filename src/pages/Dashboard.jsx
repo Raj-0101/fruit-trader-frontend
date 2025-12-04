@@ -1,9 +1,13 @@
-import React from 'react';
+// src/pages/Dashboard.jsx
+import React from "react";
+
 export default function Dashboard(){
   return (
     <div>
-      <h1 style={{fontSize:24}}>Dashboard</h1>
-      <p>Welcome. Use the menu to manage farmers, clients and reports.</p>
+      <h2>Dashboard</h2>
+      <div className="card" style={{marginTop:12}}>
+        <p>Welcome to Rafulin Orchards. Use the menu to manage farmers, clients, purchases, sales and reports.</p>
+      </div>
     </div>
   );
 }

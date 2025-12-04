@@ -1,53 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import API from '../api/api';
-import { useParams } from 'react-router-dom';
+// src/pages/Farmers.jsx
+import React, {useState,useEffect} from "react";
+import axios from "axios";
+import FarmerForm from "../components/FarmerForm";
 
-export default function FarmerDetail(){
-  const { id } = useParams();
-  const [farmer, setFarmer] = useState(null);
-  const [purchases, setPurchases] = useState([]);
-  const [summary, setSummary] = useState({});
+const API = import.meta.env.VITE_API_URL || "";
 
-  const fetch = async () => {
-    try {
-      const res = await API.get(`/farmers/${id}`);
-      setFarmer(res.data.farmer);
-      setPurchases(res.data.purchases || []);
-      setSummary(res.data.summary || {});
-    } catch (err) { console.error(err); }
-  };
+export default function Farmers(){
+  const [farmers, setFarmers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => { fetch(); }, [id]);
+  useEffect(()=> { fetchList(); }, []);
+
+  async function fetchList(){
+    setLoading(true);
+    try{
+      const res = await axios.get(`${API}/farmers?page=1&limit=200`);
+      setFarmers(res.data || []);
+    }catch(e){ console.error(e); alert("Failed to load farmers"); }
+    setLoading(false);
+  }
+
+  async function remove(id){
+    if(!confirm("Delete this farmer?")) return;
+    try{
+      await axios.delete(`${API}/farmers/${id}`);
+      fetchList();
+    }catch(e){ console.error(e); alert("Delete failed"); }
+  }
+
+  function openEdit(f){
+    setEditing(f);
+    setShowForm(true);
+  }
+  function openAdd(){
+    setEditing(null);
+    setShowForm(true);
+  }
 
   return (
     <div>
-      <h1 style={{fontSize:22}}>{farmer?.name || 'Farmer'}</h1>
-      <div style={{marginBottom:12}}>Code: {farmer?.farmerCode} | Phone: {farmer?.phone} | Pending: {(farmer?.pendingBalance||0).toFixed(2)}</div>
-
-      <div style={{marginBottom:12}}>
-        <strong>Summary:</strong>
-        <div>Total Kg: {summary.totalKg}</div>
-        <div>Total Value: {summary.totalAmount}</div>
-        <div>Total Paid: {summary.totalPaid}</div>
-        <div>Total Pending: {summary.totalPending}</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <h2>Farmers</h2>
+        <button className="btn btn-accent" onClick={openAdd}>Add Farmer</button>
       </div>
 
-      <table>
-        <thead><tr><th>Date</th><th>Fruit</th><th>Kg</th><th>Rate</th><th>Total</th><th>Paid</th><th>Pending</th></tr></thead>
-        <tbody>
-          {purchases.map(p => (
-            <tr key={p._id}>
-              <td>{new Date(p.date).toLocaleDateString()}</td>
-              <td>{p.fruit}</td>
-              <td>{p.quantityKg}</td>
-              <td>{p.ratePerKg}</td>
-              <td>{p.totalAmount}</td>
-              <td>{p.paidAmount}</td>
-              <td>{p.pendingAmount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card">
+        {loading ? <div>Loading...</div> :
+          <table className="table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Village</th><th>Pending</th><th>Actions</th></tr></thead>
+            <tbody>
+              {farmers.map(f=>(
+                <tr key={f._id}>
+                  <td>{f.name}</td>
+                  <td>{f.phone}</td>
+                  <td>{f.village}</td>
+                  <td>{f.pending ?? 0}</td>
+                  <td className="actions">
+                    <button className="btn" onClick={()=>openEdit(f)}>Edit</button>
+                    <button className="btn btn-danger" onClick={()=>remove(f._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        }
+      </div>
+
+      {showForm && <FarmerForm
+         farmer={editing}
+         onClose={()=>{ setShowForm(false); fetchList(); }}
+      />}
     </div>
   );
 }

@@ -1,53 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import API from '../api/api';
-import { useParams } from 'react-router-dom';
+// src/pages/Clients.jsx
+import React, {useState,useEffect} from "react";
+import axios from "axios";
+import ClientForm from "../components/ClientForm";
 
-export default function ClientDetail(){
-  const { id } = useParams();
-  const [client, setClient] = useState(null);
-  const [sales, setSales] = useState([]);
-  const [summary, setSummary] = useState({});
+const API = import.meta.env.VITE_API_URL || "";
 
-  const fetch = async () => {
-    try {
-      const res = await API.get(`/clients/${id}`);
-      setClient(res.data.client);
-      setSales(res.data.sales || []);
-      setSummary(res.data.summary || {});
-    } catch (err) { console.error(err); }
-  };
+export default function Clients(){
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => { fetch(); }, [id]);
+  useEffect(()=> { fetchList(); }, []);
+
+  async function fetchList(){
+    setLoading(true);
+    try{
+      const res = await axios.get(`${API}/clients?page=1&limit=200`);
+      setClients(res.data || []);
+    }catch(e){ console.error(e); alert("Failed to load clients"); }
+    setLoading(false);
+  }
+
+  async function remove(id){
+    if(!confirm("Delete this client?")) return;
+    try{
+      await axios.delete(`${API}/clients/${id}`);
+      fetchList();
+    }catch(e){ console.error(e); alert("Delete failed"); }
+  }
+
+  function openEdit(c){
+    setEditing(c);
+    setShowForm(true);
+  }
+  function openAdd(){
+    setEditing(null);
+    setShowForm(true);
+  }
 
   return (
     <div>
-      <h1 style={{fontSize:22}}>{client?.name || 'Client'}</h1>
-      <div style={{marginBottom:12}}>Phone: {client?.phone} | Pending: {(client?.pendingBalance||0).toFixed(2)}</div>
-
-      <div style={{marginBottom:12}}>
-        <strong>Summary:</strong>
-        <div>Total Kg: {summary.totalKg}</div>
-        <div>Total Value: {summary.totalAmount}</div>
-        <div>Total Received: {summary.totalPaid}</div>
-        <div>Total Pending: {summary.totalPending}</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <h2>Clients</h2>
+        <button className="btn btn-accent" onClick={openAdd}>Add Client</button>
       </div>
 
-      <table>
-        <thead><tr><th>Date</th><th>Fruit</th><th>Kg</th><th>Rate</th><th>Total</th><th>Paid</th><th>Pending</th></tr></thead>
-        <tbody>
-          {sales.map(s => (
-            <tr key={s._id}>
-              <td>{new Date(s.date).toLocaleDateString()}</td>
-              <td>{s.fruit}</td>
-              <td>{s.quantityKg}</td>
-              <td>{s.ratePerKg}</td>
-              <td>{s.totalAmount}</td>
-              <td>{s.paidAmount}</td>
-              <td>{s.pendingAmount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card">
+        {loading ? <div>Loading...</div> :
+          <table className="table">
+            <thead><tr><th>Name</th><th>Phone</th><th>GST</th><th>Pending</th><th>Actions</th></tr></thead>
+            <tbody>
+              {clients.map(c=>(
+                <tr key={c._id}>
+                  <td>{c.name}</td>
+                  <td>{c.phone}</td>
+                  <td>{c.gst || "-"}</td>
+                  <td>{c.pending ?? 0}</td>
+                  <td className="actions">
+                    <button className="btn" onClick={()=>openEdit(c)}>Edit</button>
+                    <button className="btn btn-danger" onClick={()=>remove(c._id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        }
+      </div>
+
+      {showForm && <ClientForm
+         client={editing}
+         onClose={()=>{ setShowForm(false); fetchList(); }}
+      />}
     </div>
   );
 }
