@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import salesService from "../services/salesService";
+import salesService from "../Services/salesService";   // <-- ensure folder name case is correct
 import { saveAs } from "file-saver";
-import XLSX from "xlsx";
-import jsPDF from "jspdf";
+import * as XLSX from "xlsx";         // <-- correct import
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";             // <-- required plugin
+
 
 export default function Sales() {
   const empty = { date: "", fruit: "", quantity: 0, rate: 0, paid: 0, notes: "" };
