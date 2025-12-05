@@ -1,6 +1,6 @@
 // src/pages/Purchases.jsx
 import React, { useState, useEffect } from "react";
-import purchasesService from "../services/purchasesService"; // match folder case
+import purchasesService from "../services/purchasesService.js"; // match folder case
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";

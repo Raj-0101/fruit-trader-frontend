@@ -1,6 +1,6 @@
 // src/pages/Sales.jsx
 import React, { useState, useEffect } from "react";
-import salesService from "../services/salesService";     // match folder name exactly
+import salesService from "../services/salesService.js";    // match folder name exactly
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
